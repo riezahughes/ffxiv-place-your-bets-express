@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Orbitron" rel="stylesheet">
+    <script>
+
+    var ws = new WebSocket("ws://localhost:3001");
+    var message;
+
+    ws.onmessage = function (evt) { 
+      message = JSON.parse(evt.data);
+      console.log(message);
+
+    };
+
+      function askQuestion(){
+        document.getElementById("inputText").value = "";
+        document.getElementById("voteWindow").style.display = "none";
+        document.getElementById("questionWindow").style.display = "block";
+        document.getElementById("question").disabled = false;
+        document.getElementById("confirmQuestion").disabled = false;
+        document.getElementById("question").style.opacity = 1;
+        document.getElementById("yesChoice").style.background = "#202020";
+        document.getElementById("noChoice").style.background = "#202020";
+        document.getElementById("yesChoice").disabled = false;
+        document.getElementById("noChoice").disabled = false;
+        document.getElementById("yesChoice").style.opacity = 1;
+        document.getElementById("noChoice").style.opacity = 1;
+      }
+
+      function resultScreen(){
+        document.getElementById("voteWindow").style.display = "none";
+        document.getElementById("resultsWindow").style.display = "none";
+        document.getElementById("questionWindow").style.display = "block";
+      }
+
+
+      function startTime(){
+
+        ws.send(JSON.stringify(
+          {
+            choice: "askQuestion"
+          }
+        ))
+
+        var placeYourBetsAudio = new Audio('placeyourbetsnow.mp3');
+        var tickTock = new Audio('ticktock.mp3');
+        var bettingEnds = new Audio('bettingends.mp3');
+        var questionText = document.getElementById("inputText").value;
+        
+        //set styles
+        document.getElementById("voteWindow").style.display = "Block";
+        document.getElementById("questionWindow").style.display = "none";
+        document.getElementById("question").disabled = true;
+        document.getElementById("confirmQuestion").disabled = true;
+        document.getElementById("question").style.opacity = 0.3;
+        document.getElementById("questionText").innerHTML = questionText;
+
+        placeYourBetsAudio.play();
+        tickTock.loop = true;
+        tickTock.play()
+
+        var timer = 11;
+        document.getElementById("timer").innerText = "0:"+timer;
+        myTimer = setInterval(function () {
+          timer = timer - 1;
+          if(timer < 10){
+            document.getElementById("timer").innerText = "0:0"+timer;
+            console.log("current time: "+timer);
+          }else{
+            document.getElementById("timer").innerText = "0:"+timer;
+            console.log("current time: "+timer);
+          }
+          if(timer == 0){
+            tickTock.pause();
+            bettingEnds.play();
+            document.getElementById("question").style.opacity = 1;
+            document.getElementById("question").disabled = false;
+            ws.send(JSON.stringify({choice: "votingEnd"}));
+            clearInterval(myTimer);
+          }
+        
+        }, 1000);
+      }
+      function resetChoice(){
+       // window.setTimeout(function(){
+          document.getElementById("yesChoice").disabled = false;
+          document.getElementById("noChoice").disabled = false;
+          document.getElementById("yesChoice").style.background = "#202020";
+          document.getElementById("noChoice").style.background = "#202020";
+          document.getElementById("yesChoice").style.opacity = 1;
+          document.getElementById("noChoice").style.opacity = 1;
+      //  }, 3000);
+      }
+      function voteChoice(num){
+        if(num == true){
+          document.getElementById("yesChoice").style.background = "#5fba7d";
+          document.getElementById("yesChoice").disabled = true;
+          document.getElementById("noChoice").disabled = true;
+          document.getElementById("noChoice").style.opacity = 0.5;
+          //resetChoice();
+          ws.send({choice: true});
+        }
+        if(num == false){
+          document.getElementById("noChoice").style.background = "#a33939";
+          document.getElementById("yesChoice").disabled = true;
+          document.getElementById("noChoice").disabled = true;       
+          document.getElementById("yesChoice").style.opacity = 0.5;
+          //resetChoice();
+          ws.send({choice: false});
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="top-bar">
+
+      <button id="question" onClick="askQuestion()"><i class="fas fa-stopwatch"></i>   QUESTION</button>
+      <p class="users"><i class="fas fa-user"></i> <span id="userCount">0</span></p>          
+      <p class="clock">TIME: <span id="timer">0:00</span></p>
+        
+      <div style="clear: both">
+      </div>
+    </div>
+    <div class="window">
+      <div class="questionWindow" id="questionWindow">
+        <div class="letter"><strong>Q: </strong></div>
+        <div class="question">
+          <input id="inputText" type="text" placeholder="What's your question?">
+        </div>
+        <div class="answers">
+          <button id="confirmQuestion" class="button" onClick="startTime()"> BEGIN VOTE  <i class="far fa-comment"></i> </button>
+        </div>
+        <div style="clear: both">
+          </div>
+      </div>
+      <div class="voteWindow"  id="voteWindow">
+        <div class="letter"><strong>Q: </strong></div>
+        <div class="question">
+          <p id="questionText">Is Triss REALLY weaponised Autism?</span></p>
+        </div>
+        <div class="answers">
+            <button id="yesChoice" class="button" onClick="voteChoice(true);">AYE  <i class="fas fa-thumbs-up"></i></button>
+            <button id="noChoice" class="button" onClick="voteChoice(false);">NAH  <i class="fas fa-thumbs-down"></i></button>
+        </div>
+        <div style="clear: both">
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

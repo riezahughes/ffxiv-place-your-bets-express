@@ -1,0 +1,111 @@
+*{
+  margin: 0;
+  padding: 0;
+}
+body {
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  /*background-color: rgba(0,0,0,0.3);*/
+  color: white;
+  letter-spacing: 1px;
+  width: 490px;
+}
+
+.button{
+  padding: 5px;
+  text-align: center;
+  background-color: #202020;
+  border-radius: 5px;
+  border: none;
+  color: white;
+}
+.top-bar{
+  background-color: rgba(0,0,0,0.8);
+  border-radius: 5px;
+  margin: 0;
+}
+.top-bar .clock{
+  font-family: 'Orbitron', sans-serif;
+  padding: 0;
+  margin: 0;
+  float: right;
+  padding: 0px 3px 0px 0px;
+}
+.top-bar .users{
+  font-family: 'Orbitron', sans-serif;
+  padding: 0;
+  margin: 0;
+  float: left;
+  padding: 0px 0px 0px 3px;
+}
+
+.top-bar button{
+  font-family: 'Orbitron', sans-serif;
+  color: white;
+  background: none;
+  border: none;
+  padding-left: 5px;
+  padding-right: 5px;
+  float: left;
+}
+
+.window{
+  background-color: #303030;
+  margin: 2px 0px 0px 0px;
+  border-radius: 5px;
+  padding: 5px;
+  border: 2px solid #9c896b;
+}
+
+.question{
+  background-color: #202020;
+  padding: 5px;
+  border-radius: 5px;
+  word-wrap: normal;
+  width: 295px;
+  height: 15px;
+  overflow: hidden !important;
+  float: left;
+  white-space: nowrap;
+  overflow-x: scroll;
+  text-align: left;
+  margin-left: 5px;
+}
+.letter{
+  margin-top: 5px;
+  margin-left: 2px;
+  float: left;
+}
+.question p{
+  margin: 0;
+  padding-left: 300px;
+  animation: marquee 6s linear infinite;
+}
+
+.answers{
+  float: right;
+  margin-right: 27px;
+}
+
+a {
+  color: #00B7FF;
+}
+
+#voteWindow{
+  display: none;
+}
+
+#inputText{
+  border: none;
+  background: none;
+  width: 100%;
+  color: white;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(-230%, 0);
+  }
+}
