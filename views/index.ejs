@@ -10,12 +10,12 @@
     var ws = new WebSocket("ws://localhost:3001");
     var message;
     var currentMessage;
-
+    var timer;
     ws.onmessage = function (evt) {
       message = JSON.parse(evt.data);
       console.log(message);
-
-      if(message.commmand == "userCount"){
+      if(message.command == "userCount"){
+        console.log(message.message);
         document.getElementById("userCount").innerHTML = message.message;
       }
       if(message.command == "beginVote"){
@@ -56,6 +56,31 @@
             text: document.getElementById("inputText").value
           }
         ));
+        var placeYourBetsAudio = new Audio('placeyourbetsnow.mp3');
+        var tickTock = new Audio('ticktock.mp3');
+        var bettingEnds = new Audio('bettingends.mp3');
+        
+          var timer = 11;
+          selfTimer = setInterval(function () {
+          timer = timer - 1;
+          if(timer < 10){
+            document.getElementById("timer").innerText = "0:0"+timer;
+            console.log("current time: "+timer);
+          }else{
+            document.getElementById("timer").innerText = "0:"+timer;
+            console.log("current time: "+timer);
+          }
+          if(timer == 0){
+            tickTock.pause();
+            bettingEnds.play();
+            document.getElementById("question").style.opacity = 1;
+            document.getElementById("question").disabled = false;
+            ws.send(JSON.stringify({choice: "votingEnd"}));
+
+            clearInterval(selfTimer);
+          }
+        
+        }, 1000);
       }
 
       function beginVote(){
