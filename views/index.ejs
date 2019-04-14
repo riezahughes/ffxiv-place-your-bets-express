@@ -9,11 +9,22 @@
 
     var ws = new WebSocket("ws://localhost:3001");
     var message;
+    var currentMessage;
 
-    ws.onmessage = function (evt) { 
+    ws.onmessage = function (evt) {
       message = JSON.parse(evt.data);
       console.log(message);
 
+      if(message.commmand == "userCount"){
+        document.getElementById("userCount").innerHTML = message.message;
+      }
+      if(message.command == "beginVote"){
+        currentMessage = message.usermsg;
+        beginVote();
+      }
+      if(message.command == "voteCount"){
+        console.log(message.message);
+      }
     };
 
       function askQuestion(){
@@ -39,17 +50,19 @@
 
 
       function startTime(){
-
         ws.send(JSON.stringify(
           {
-            choice: "askQuestion"
+            choice: "askQuestion",
+            text: document.getElementById("inputText").value
           }
-        ))
+        ));
+      }
+
+      function beginVote(){
 
         var placeYourBetsAudio = new Audio('placeyourbetsnow.mp3');
         var tickTock = new Audio('ticktock.mp3');
         var bettingEnds = new Audio('bettingends.mp3');
-        var questionText = document.getElementById("inputText").value;
         
         //set styles
         document.getElementById("voteWindow").style.display = "Block";
@@ -57,7 +70,7 @@
         document.getElementById("question").disabled = true;
         document.getElementById("confirmQuestion").disabled = true;
         document.getElementById("question").style.opacity = 0.3;
-        document.getElementById("questionText").innerHTML = questionText;
+        document.getElementById("questionText").innerHTML = currentMessage;
 
         placeYourBetsAudio.play();
         tickTock.loop = true;
@@ -85,6 +98,7 @@
         
         }, 1000);
       }
+    
       function resetChoice(){
        // window.setTimeout(function(){
           document.getElementById("yesChoice").disabled = false;
@@ -102,7 +116,7 @@
           document.getElementById("noChoice").disabled = true;
           document.getElementById("noChoice").style.opacity = 0.5;
           //resetChoice();
-          ws.send({choice: true});
+          ws.send(JSON.stringify({choice: true}));
         }
         if(num == false){
           document.getElementById("noChoice").style.background = "#a33939";
@@ -110,7 +124,7 @@
           document.getElementById("noChoice").disabled = true;       
           document.getElementById("yesChoice").style.opacity = 0.5;
           //resetChoice();
-          ws.send({choice: false});
+          ws.send(JSON.stringify({choice: false}));
         }
       }
     </script>
