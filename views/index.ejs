@@ -11,23 +11,44 @@
     var message;
     var currentMessage;
     var timer;
+    var clientChoice;
+    var questionChoice = false;
+
     ws.onmessage = function (evt) {
       message = JSON.parse(evt.data);
       console.log(message);
       if(message.command == "userCount"){
-        console.log(message.message);
+        //console.log(message.message);
         document.getElementById("userCount").innerHTML = message.message;
       }
       if(message.command == "beginVote"){
         currentMessage = message.usermsg;
+        //console.log(message.usrmsg);
         beginVote();
       }
-      if(message.command == "voteCount"){
-        console.log(message.message);
+
+      if(message.command == "makeChoice"){
+        document.getElementById("voteWindow").style.display = "none";
+        document.getElementById("resultsWindow").style.display = "none";
+        document.getElementById("questionWindow").style.display = "none";
+        document.getElementById("windowLock").style.display = "none";
+        document.getElementById("confirmWindow").style.display = "block";
+        document.getElementById("confirmText").innerHTML = currentMessage;
       }
+      if(message.command == "lockScreen"){
+        lockVoters();
+      }
+      if(message.command == "finalChoice"){
+        resultScreen(message.final_choice, message.true_votes, message.false_votes)
+      }      
     };
+      function lockVoters(){
+        document.getElementById("windowLock").style.display = "block";
+      }
 
       function askQuestion(){
+        document.getElementById("resultsWindow").style.display = "none";
+        document.getElementById("windowLock").style.display = "none";
         document.getElementById("inputText").value = "";
         document.getElementById("voteWindow").style.display = "none";
         document.getElementById("questionWindow").style.display = "block";
@@ -40,26 +61,44 @@
         document.getElementById("noChoice").disabled = false;
         document.getElementById("yesChoice").style.opacity = 1;
         document.getElementById("noChoice").style.opacity = 1;
+        questionChoice = false;
       }
 
-      function resultScreen(){
+      function resultScreen(result, trueVotes, falseVotes){
+
         document.getElementById("voteWindow").style.display = "none";
-        document.getElementById("resultsWindow").style.display = "none";
-        document.getElementById("questionWindow").style.display = "block";
+        document.getElementById("resultsWindow").style.display = "block";
+        document.getElementById("questionWindow").style.display = "none";
+        document.getElementById("windowLock").style.display = "none";
+        document.getElementById("confirmWindow").style.display = "none";
+        document.getElementById("yesChoice").style.background = "#202020";
+        document.getElementById("noChoice").style.background = "#202020";
+        document.getElementById("yesChoice").disabled = false;
+        document.getElementById("noChoice").disabled = false;
+
+        if(result === clientChoice && questionChoice === false){
+          document.getElementById("resultsText").innerHTML = "<i class='fas fa-check-circle'></i>You chose WISELY!";
+        }else if(result !== clientChoice && questionChoice === false){
+          document.getElementById("resultsText").innerHTML = "<i class='fas fa-times'></i>You chose POORLY";
+        }else{
+          document.getElementById("resultsText").innerHTML = "Total Votes: AYE - "+trueVotes+" | NAE - "+falseVotes;
+        }
       }
 
 
       function startTime(){
+        currentMessage = document.getElementById("inputText").value;
         ws.send(JSON.stringify(
           {
             choice: "askQuestion",
             text: document.getElementById("inputText").value
           }
         ));
+        questionChoice = true;
         var placeYourBetsAudio = new Audio('placeyourbetsnow.mp3');
         var tickTock = new Audio('ticktock.mp3');
         var bettingEnds = new Audio('bettingends.mp3');
-        
+
           var timer = 11;
           selfTimer = setInterval(function () {
           timer = timer - 1;
@@ -75,8 +114,12 @@
             bettingEnds.play();
             document.getElementById("question").style.opacity = 1;
             document.getElementById("question").disabled = false;
-            ws.send(JSON.stringify({choice: "votingEnd"}));
-
+            if(questionChoice = true){
+              ws.send(JSON.stringify({choice: "votingEndMaster"}));
+            }else{
+              ws.send(JSON.stringify({choice: "votingEndSlave"}));
+            }
+            
             clearInterval(selfTimer);
           }
         
@@ -84,7 +127,7 @@
       }
 
       function beginVote(){
-
+        document.getElementById("resultsWindow").style.display = "none";
         var placeYourBetsAudio = new Audio('placeyourbetsnow.mp3');
         var tickTock = new Audio('ticktock.mp3');
         var bettingEnds = new Audio('bettingends.mp3');
@@ -117,7 +160,7 @@
             bettingEnds.play();
             document.getElementById("question").style.opacity = 1;
             document.getElementById("question").disabled = false;
-            ws.send(JSON.stringify({choice: "votingEnd"}));
+              ws.send(JSON.stringify({choice: "votingEndSlave"}));
             clearInterval(myTimer);
           }
         
@@ -141,6 +184,7 @@
           document.getElementById("noChoice").disabled = true;
           document.getElementById("noChoice").style.opacity = 0.5;
           //resetChoice();
+          clientChoice = true;
           ws.send(JSON.stringify({choice: true}));
         }
         if(num == false){
@@ -149,9 +193,22 @@
           document.getElementById("noChoice").disabled = true;       
           document.getElementById("yesChoice").style.opacity = 0.5;
           //resetChoice();
+          clientChoice = false;
           ws.send(JSON.stringify({choice: false}));
         }
       }
+        
+      function voteChoiceAnswer(num){
+        if(num == true){
+          //resetChoice();
+          ws.send(JSON.stringify({choice: "finalChoice", finalChoice: true}));
+        }
+        if(num == false){
+          //resetChoice();
+          ws.send(JSON.stringify({choice: "finalChoice", finalChoice: false}));
+        }        
+
+      };
     </script>
   </head>
   <body>
@@ -165,6 +222,29 @@
       </div>
     </div>
     <div class="window">
+      <div class="windowLock" id="windowLock">
+        <p>[ DRUM ROLL INTENSIFIES ]</p>
+      </div>
+      <div class="confirmWindow" id="confirmWindow">
+          <div class="letter"><strong>A: </strong></div>
+          <div class="question">
+            <p id="confirmText"></p>
+          </div>
+          <div class="answers">
+              <button id="yesChoiceAnswer" class="button" onClick="voteChoiceAnswer(true);">AYE  <i class="fas fa-thumbs-up"></i></button>
+              <button id="noChoiceAnswer" class="button" onClick="voteChoiceAnswer(false);">NAH  <i class="fas fa-thumbs-down"></i></button>
+          </div>
+          <div style="clear: both">
+          </div>
+      </div>
+      <div class="resultsWindow" id="resultsWindow">
+          <div class="letter"><strong id="choice"></strong></div>
+          <div class="question">
+              <p id="resultsText"></p>
+          </div>
+          <div style="clear: both">
+            </div>
+      </div>
       <div class="questionWindow" id="questionWindow">
         <div class="letter"><strong>Q: </strong></div>
         <div class="question">
@@ -179,7 +259,7 @@
       <div class="voteWindow"  id="voteWindow">
         <div class="letter"><strong>Q: </strong></div>
         <div class="question">
-          <p id="questionText">Is Triss REALLY weaponised Autism?</span></p>
+          <p id="questionText">Is Triss REALLY weaponised Autism?</p>
         </div>
         <div class="answers">
             <button id="yesChoice" class="button" onClick="voteChoice(true);">AYE  <i class="fas fa-thumbs-up"></i></button>
