@@ -102,6 +102,10 @@ a {
   display: none;
 }
 
+#resultsText{
+  font-weight: bold;
+}
+
 #windowLock{
   height: 100%;
   width: 100%;
