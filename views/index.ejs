@@ -20,7 +20,7 @@
 
     ws.onmessage = function (evt) {
       message = JSON.parse(evt.data);
-      console.log(message);
+      //console.log(message);
       if(message.command == "userCount"){
         //console.log(message.message);
         document.getElementById("userCount").innerHTML = message.message;
@@ -43,6 +43,7 @@
         lockVoters();
       }
       if(message.command == "finalChoice"){
+        console.log(message.true_votes+" - "+message.false_votes);
         resultScreen(message.final_choice, message.true_votes, message.false_votes)
       }      
     };
@@ -66,6 +67,7 @@
         document.getElementById("noChoice").disabled = false;
         document.getElementById("yesChoice").style.opacity = 1;
         document.getElementById("noChoice").style.opacity = 1;
+        message = "";
         questionChoice = false;
       }
 
@@ -83,7 +85,10 @@
         document.getElementById("yesChoice").style.opacity = 1;
         document.getElementById("noChoice").style.opacity = 1;
 
-        if(result === clientChoice && questionChoice === false){
+        if(trueVotes === 0 && falseVotes === 0){
+          document.getElementById("resultsText").innerHTML = "No votes!";
+          document.getElementById("resultsText").style.color = "#ffffff";
+        }else if(result === clientChoice && questionChoice === false){
           document.getElementById("resultsText").innerHTML = "<i class='fas fa-check-circle'></i>You chose WISELY! AYE - " + trueVotes + " | NAH - "+falseVotes;
           document.getElementById("resultsText").style.color = "#7cb27d";
         }else if(result !== clientChoice && questionChoice === false){
@@ -93,6 +98,7 @@
           document.getElementById("resultsText").innerHTML = "Total Votes: AYE - "+trueVotes+" | NAH - "+falseVotes;
           document.getElementById("resultsText").style.color = "#ffffff";
         }
+        
       }
 
 
@@ -117,10 +123,10 @@
           timer = timer - 1;
           if(timer < 10){
             document.getElementById("timer").innerText = "0:0"+timer;
-            console.log("current time: "+timer);
+            //console.log("current time: "+timer);
           }else{
             document.getElementById("timer").innerText = "0:"+timer;
-            console.log("current time: "+timer);
+            //console.log("current time: "+timer);
           }
           if(timer == 0){
 
@@ -128,12 +134,7 @@
             bettingEnds.play();
             document.getElementById("question").style.opacity = 1;
             document.getElementById("question").disabled = false;
-
-            if(questionChoice = true){
-              ws.send(JSON.stringify({choice: "votingEndMaster"}));
-            }else{
-              ws.send(JSON.stringify({choice: "votingEndSlave"}));
-            }
+            ws.send(JSON.stringify({choice: "votingEndMaster"}));
             document.getElementById("confirmQuestion").disabled = false;
             document.getElementById("confirmQuestion").style.opacity = 1;
             clearInterval(selfTimer);
@@ -156,17 +157,17 @@
 
         placeYourBetsAudio.play();
         tickTock.play()
-
+        questionChoice = false;
         var timer = 11;
         document.getElementById("timer").innerText = "0:"+timer;
         myTimer = setInterval(function () {
           timer = timer - 1;
           if(timer < 10){
             document.getElementById("timer").innerText = "0:0"+timer;
-            console.log("current time: "+timer);
+            //console.log("current time: "+timer);
           }else{
             document.getElementById("timer").innerText = "0:"+timer;
-            console.log("current time: "+timer);
+            //console.log("current time: "+timer);
           }
           if(timer == 0){
             tickTock.pause();
